@@ -15,50 +15,34 @@
 # Update path to toolchain
 echo "Searching for zImage compression"
 
-# following is only for kernels packed with XZ compression
-LOC1=`grep -P -a -b -m 1 --only-matching '\xfd7zXZ\x00' $1 | tail -1 | cut -d: -f 1`
+declare -a comp_list=("xz" "lzop" "lz4" "gzip")
+declare -a comp_pt_list=("\xfd7zXZ\x00" "\x89LZO\x00" "\x02\x21\x4c\x18" "\x1f\x8b\x08")
+
+unpack_cmd=0
+for hex_pt in ${comp_list[@]}
+do
+unpack_cmd=${hex_pt}
+LOC1=`grep -P -a -b --only-matching "'${comp_pt_list[hex_pt]}'" $1 | tail -1 | cut -d: -f 1`
 if [ $LOC1 ]
 then
-	echo "XZ compression detected"
-	echo "Unpacking zImage"
-	dd if=$1 bs=$LOC1 skip=1 | xz -dc > kernel.Image
+	break
 else
-
-	# following is only for kernels packed with LZO compression
-	LOC1=`grep -P -a -b --only-matching '\x89LZO\x00' $1 | tail -1 | cut -d: -f 1`
-	if [ $LOC1 ]
-	then
-		echo "LZO compression detected"
-		echo "Unpacking zImage"
-		dd if=$1 bs=$LOC1 skip=1 | lzop -do kernel.Image
-	else
-		# following is only for kernels packed with LZ4 compression
-		LOC1=`grep -P -a -b --only-matching '\x02\x21\x4c\x18' $1 | tail -1 | cut -d: -f 1`
-		if [ $LOC1 ]
-		then
-			echo "LZ4 compression detected"
-			echo "Unpacking zImage"
-			dd if=$1 bs=$LOC1 skip=1 | lz4 -d > kernel.Image
-		else
-			# following is only for kernels packed with GZ compression
-			LOC1=`grep -P -a -b -m 1 --only-matching '\x1f\x8b\x08' $1 | tail -1 | cut -d: -f 1`
-			if [ $LOC1 ]
-			then
-				echo "GZ compression detected"
-				echo "Unpacking zImage"
-				dd if=$1 bs=$LOC1 skip=1 | gzip -dc > kernel.Image
-			else
-				echo "Unsupported compression!"
-			fi
-		fi
-
-	fi
-
+	let hex_pt++
 fi
+done
 
 LOC=$LOC1
 if [ $LOC ]
 then
+	echo "$unpack_cmd compression detected"
+	echo "Unpacking zImage"
+	case "$unpack_cmd" in
+		"xz" ) opt="-dc" ;;
+		"lzop" ) opt="-do" ;;
+		"lz4" ) opt="-d" ;;
+		"gzip" ) opt="-dc" ;;
+	esac
+	dd if=$1 bs=$LOC1 skip=1 | $unpack_cmd $opt > kernel.Image
 	if [ -e kernel.Image ]
 	then
 		echo "DONE unpacking zImage"
