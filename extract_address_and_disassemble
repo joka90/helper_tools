@@ -15,8 +15,8 @@
 # Update path to toolchain
 echo "Searching for zImage compression"
 
-declare -a comp_list=("xz" "lzop" "lz4" "lz4" "gzip" "bzip2" "lzip")
-declare -a comp_pt_list=("\xfd7zXZ\x00" "\x89LZO\x00" "\x02\x21\x4c\x18" "\x04\x22\x4d\x18" "\x1f\x8b\x08" "\x42\x5a\x68\x39" "LZIP")
+declare -a comp_list=("xz" "lzop" "lzop" "lz4" "lz4" "gzip" "bzip2" "lzip")
+declare -a comp_pt_list=("\xfd7zXZ\x00" "\x89LZO\x00" "\LZO\x00" "\x02\x21\x4c\x18" "\x04\x22\x4d\x18" "\x1f\x8b\x08" "\x42\x5a\x68\x39" "LZIP")
 
 unpack_cmd=0
 for hex_pt in ${comp_list[@]}
