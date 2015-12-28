@@ -5,7 +5,7 @@ This repo will contain scripts, binaries which will speed up the kernel address 
 
 Extract address:
 
-        user@buildhost:/SO-04D/9.1.C.0.475$ /helper_tools/extract_address_and_disassemble kernel.bin
+        user@buildhost:/SO-04D/9.1.C.0.475$bash /helper_tools/extract_address_and_disassemble kernel.bin
         Searching for zImage compression
         LZO compression detected
         Unpacking zImage
